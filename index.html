@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ขายสินค้า</title>
+    <style>
+        /* ตั้งค่ารูปแบบตัวอักษรและการจัดวาง */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        /* กำหนดลักษณะของปุ่ม */
+        .btn {
+            display: block;
+            width: 200px;
+            margin: 10px auto;
+            padding: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        /* ปุ่มขาย */
+        .sell { background-color: #4CAF50; color: white; }
+        /* ปุ่มเติมของ */
+        .stock { background-color: #2196F3; color: white; }
+        /* ปุ่มดูหลังบ้าน */
+        .dashboard { background-color: #FF9800; color: white; }
+        /* ปุ่มเลือกสินค้า */
+        .product-btn { background-color: #f44336; color: white; }
+    </style>
+</head>
+<body>
+    <h1>ขายสินค้า</h1>
+    <p>เลือกสินค้า:</p>
+    <!-- ปุ่มเลือกสินค้า -->
+    <button class="btn product-btn" onclick="selectProduct('ชาไทย')">ชาไทย</button>
+    <button class="btn product-btn" onclick="selectProduct('ชาเขียว')">ชาเขียว</button>
+    <button class="btn product-btn" onclick="selectProduct('ลำไย')">ลำไย</button>
+    <br><br>
+    <!-- ช่องกรอกจำนวนสินค้า -->
+    <label for="quantity">จำนวน:</label>
+    <input type="number" id="quantity" min="1" value="1">
+    <br><br>
+    <!-- ช่องกรอกราคาสินค้าต่อหน่วย -->
+    <label for="price">ราคา/หน่วย:</label>
+    <input type="number" id="price" value="0">
+    <br><br>
+    <p id="selectedProduct">สินค้า: -</p>
+    <br>
+    <!-- ช่องรับเงินจากลูกค้า -->
+    <label for="received">รับเงินมา:</label>
+    <input type="number" id="received" value="0">
+    <br><br>
+    <!-- ปุ่มคำนวณเงินทอน -->
+    <button class="btn sell" onclick="calculatePayment()">คำนวณเงินทอน</button>
+    <br>
+    <!-- แสดงราคารวมและเงินทอน -->
+    <p id="totalDisplay">ราคารวม: 0 บาท</p>
+    <p id="changeDisplay">เงินทอน: 0 บาท</p>
+    <br>
+    <!-- แสดงประวัติการขาย -->
+    <h2>ประวัติการขาย</h2>
+    <ul id="salesHistory"></ul>
+
+    <script>
+        let selectedProduct = ""; // ตัวแปรเก็บชื่อสินค้าที่เลือก
+
+        // ฟังก์ชันเลือกสินค้าและแสดงผล
+        function selectProduct(product) {
+            selectedProduct = product;
+            document.getElementById('selectedProduct').innerText = `สินค้า: ${product}`;
+        }
+
+        // ฟังก์ชันคำนวณราคารวมและเงินทอน
+        function calculatePayment() {
+            let quantity = document.getElementById('quantity').value; // รับค่าจำนวนสินค้า
+            let pricePerUnit = document.getElementById('price').value; // รับค่าราคาต่อหน่วย
+            let total = quantity * pricePerUnit; // คำนวณราคารวม
+            let received = document.getElementById('received').value; // รับค่าเงินที่ได้รับ
+            let change = received - total; // คำนวณเงินทอน
+            
+            // แสดงผลราคารวมและเงินทอน
+            document.getElementById('totalDisplay').innerText = `ราคารวม: ${total} บาท`;
+            document.getElementById('changeDisplay').innerText = `เงินทอน: ${change} บาท`;
+            
+            saveSale(selectedProduct, quantity, pricePerUnit, total); // บันทึกข้อมูลการขาย
+        }
+
+        // ฟังก์ชันบันทึกข้อมูลการขายลง Local Storage
+        function saveSale(product, quantity, price, total) {
+            let sales = JSON.parse(localStorage.getItem('sales')) || []; // ดึงข้อมูลเก่าจาก Local Storage
+            let saleData = {
+                product: product,
+                quantity: quantity,
+                price: price,
+                total: total,
+                date: new Date().toLocaleString()
+            };
+            sales.push(saleData); // เพิ่มข้อมูลใหม่ลงในรายการ
+            localStorage.setItem('sales', JSON.stringify(sales)); // บันทึกกลับไปที่ Local Storage
+            displaySalesHistory(); // อัปเดตรายการประวัติการขาย
+        }
+
+        // ฟังก์ชันแสดงประวัติการขาย
+        function displaySalesHistory() {
+            let sales = JSON.parse(localStorage.getItem('sales')) || [];
+            let historyList = document.getElementById('salesHistory');
+            historyList.innerHTML = ""; // เคลียร์ข้อมูลเก่า
+            sales.forEach(sale => {
+                let listItem = document.createElement('li'); // สร้าง <li> สำหรับแต่ละรายการ
+                listItem.textContent = `${sale.date} - ${sale.product} จำนวน: ${sale.quantity} ราคา: ${sale.price} บาท รวม: ${sale.total} บาท`;
+                historyList.appendChild(listItem); // เพิ่มเข้าไปในรายการ
+            });
+        }
+
+        displaySalesHistory(); // เรียกใช้เพื่อแสดงประวัติการขายเมื่อโหลดหน้าเว็บ
+    </script>
+</body>
+</html>
